@@ -15,6 +15,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+
 public class AES_Encrypt extends JFrame{
     private JTextArea normalText;
     private JTextArea encryptText;
@@ -130,7 +134,8 @@ public class AES_Encrypt extends JFrame{
                 } catch (NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 }
-                String dtsEncry = encryptText.getText();
+
+                String dtsEncry = normalText.getText().replace("\n","");
 
                 Cipher cipher = null;
                 try {
@@ -158,9 +163,29 @@ public class AES_Encrypt extends JFrame{
                 encryptText.setText(datos);
             }
         });
+        guardar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                String save = encryptText.getText();
+                try {
+                    String ruta = "C:\\Users\\monch\\Desktop\\filename.txt";
+                    File file = new File(ruta);
+
+                    if (!file.exists()) {
+                        file.createNewFile();
+                    }
+                    FileWriter fw = new FileWriter(file);
+                    BufferedWriter bw = new BufferedWriter(fw);
+                    bw.write(save);
+                    bw.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                System.out.println(save);
+
+            }
+        });
     }
-
-
 
     public static void main(String[] args){
         JFrame frame = new AES_Encrypt("AES Encrypt SW");
