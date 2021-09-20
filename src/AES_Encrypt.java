@@ -167,9 +167,17 @@ public class AES_Encrypt extends JFrame{
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 String save = encryptText.getText();
+
                 try {
-                    String ruta = "C:\\Users\\monch\\Desktop\\filename.txt";
-                    File file = new File(ruta);
+                    //String ruta = "C:\\Users\\monch\\Desktop\\filename.txt";
+                    //File file = new File(ruta);
+                    File file = null;
+                    JFileChooser fc = new JFileChooser();
+                    fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    int resp = fc.showOpenDialog(null);
+                    if (resp == JFileChooser.APPROVE_OPTION) {
+                        file = fc.getSelectedFile();
+                    }
 
                     if (!file.exists()) {
                         file.createNewFile();
