@@ -1,18 +1,17 @@
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.swing.*;
 
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ContainerAdapter;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+
+import java.security.spec.KeySpec;
+
 import java.util.Base64;
 
 import java.io.BufferedWriter;
@@ -30,170 +29,127 @@ public class AES_Encrypt extends JFrame{
     private JButton guardar;
     private JButton desencriptar;
 
-    String clave = "fdsavdfv";
+    private static final String KeyAES = "klnosWO?43flbro_w?T!_Fifric8akut";
+    private static final String Key2AES = "=1ez8+*Mu8L&PU?Ru@i34StEKU=867Ch";
 
     public AES_Encrypt(String tile) {
         super(tile);
-
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setContentPane(mainPanel);
+        this.setMinimumSize(new Dimension(880, 480));
+        this.setIconImage(new ImageIcon(getClass().getResource("/candado.jpg/")).getImage());
+        this.setLocationRelativeTo(null);
         this.pack();
 
-        selectFileButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                JFileChooser fc = new JFileChooser();
-                fc.showOpenDialog(JPSelect);
 
-                FileReader file = null;
-                try {
-                    file = new FileReader(fc.getSelectedFile());
-                    BufferedReader reader = new BufferedReader(file);
-
-                    String key = "";
-                    String line = reader.readLine();
-
-                    while (line != null){
-                        key += line+"\n";
-                        line = reader.readLine();
-                    }
-                    normalText.setText(key);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        encryptButton.addActionListener(new ActionListener() {
-
-            public SecretKeySpec crearClave(String clave) throws NoSuchAlgorithmException {
-                byte[] claveEncriptacion = clave.getBytes(StandardCharsets.UTF_8);
-
-                MessageDigest sha = MessageDigest.getInstance("SHA-1");
-
-                claveEncriptacion = sha.digest(claveEncriptacion);
-                claveEncriptacion = Arrays.copyOf(claveEncriptacion, 16);
-
-                return new SecretKeySpec(claveEncriptacion, "AES");
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-
-                String encryptMsg;
-                String msg = normalText.getText();
-                SecretKeySpec secretKey = null;
-                try {
-                    secretKey = this.crearClave(clave);
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-
-                Cipher cipher = null;
-                try {
-                    cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-                } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    assert cipher != null;
-                    cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-                } catch (InvalidKeyException e) {
-                    e.printStackTrace();
-                }
-
-                byte[] datosEncriptar = msg.getBytes(StandardCharsets.UTF_8);
-                byte[] bytesEncriptados = new byte[0];
-                try {
-                    bytesEncriptados = cipher.doFinal(datosEncriptar);
-                } catch (IllegalBlockSizeException | BadPaddingException e) {
-                    e.printStackTrace();
-                }
-                encryptMsg = Base64.getEncoder().encodeToString(bytesEncriptados);
-                encryptText.setText(encryptMsg);
-            }
-        });
-        desencriptar.addActionListener(new ActionListener() {
-
-            public SecretKeySpec crearClave(String clave) throws NoSuchAlgorithmException {
-                byte[] claveEncriptacion = clave.getBytes(StandardCharsets.UTF_8);
-
-                MessageDigest sha = MessageDigest.getInstance("SHA-1");
-
-                claveEncriptacion = sha.digest(claveEncriptacion);
-                claveEncriptacion = Arrays.copyOf(claveEncriptacion, 16);
-
-                return new SecretKeySpec(claveEncriptacion, "AES");
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                SecretKeySpec secretKey = null;
-                try {
-                    secretKey = this.crearClave(clave);
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
-
-                String dtsEncry = normalText.getText().replace("\n","");
-
-                Cipher cipher = null;
-                try {
-                    cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
-                } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    assert cipher != null;
-                    cipher.init(Cipher.DECRYPT_MODE, secretKey);
-                } catch (InvalidKeyException e) {
-                    e.printStackTrace();
-                }
-
-                byte[] bytesEncriptados;
-                bytesEncriptados = Base64.getDecoder().decode(dtsEncry);
-                byte[] datosDesencriptados = new byte[0];
-                try {
-                    datosDesencriptados = cipher.doFinal(bytesEncriptados);
-                } catch (IllegalBlockSizeException | BadPaddingException e) {
-                    e.printStackTrace();
-                }
-
-                String datos = new String(datosDesencriptados);
-                encryptText.setText(datos);
-            }
+        guardar.addContainerListener(new ContainerAdapter() {
         });
         guardar.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                String save = encryptText.getText();
-
-                try {
-                    //String ruta = "C:\\Users\\monch\\Desktop\\filename.txt";
-                    //File file = new File(ruta);
-                    File file = null;
-                    JFileChooser fc = new JFileChooser();
-                    fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                    int resp = fc.showOpenDialog(null);
-                    if (resp == JFileChooser.APPROVE_OPTION) {
-                        file = fc.getSelectedFile();
-                    }
-
-                    if (!file.exists()) {
-                        file.createNewFile();
-                    }
-                    FileWriter fw = new FileWriter(file);
-                    BufferedWriter bw = new BufferedWriter(fw);
-                    bw.write(save);
-                    bw.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                System.out.println(save);
-
+            public void actionPerformed(ActionEvent e) {
+                GuardarArchivo();
+            }
+        });
+        selectFileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                AbrirArchivo();
+            }
+        });
+        encryptButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Encriptar(encryptText.getText());
+            }
+        });
+        desencriptar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Desencriptar(encryptText.getText());
             }
         });
     }
+    public void GuardarArchivo() {
+
+        String save = encryptText.getText();
+        JFileChooser fc = new JFileChooser();
+        fc.showOpenDialog(mainPanel);
+        File file = new File(String.valueOf(fc.getSelectedFile())+".txt");
+        try {
+
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(save);
+            bw.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void AbrirArchivo() {
+        JFileChooser fc = new JFileChooser();
+        fc.showOpenDialog(mainPanel);
+        FileReader file = null;
+        try {
+            file = new FileReader(fc.getSelectedFile());
+            BufferedReader reader = new BufferedReader(file);
+
+            String key = "";
+            String line = reader.readLine();
+
+            while (line != null) {
+                key += line + "\n";
+                line = reader.readLine();
+            }
+            normalText.setText(key);
+            encryptText.setText(key);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
+    }
+
+    public void Encriptar(String data){
+        data = data.replace("\n","");
+        try {
+            byte[] iv = new byte[16];
+            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+            SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec keySpec = new PBEKeySpec(KeyAES.toCharArray(), Key2AES.getBytes(), 65536, 256);
+            SecretKey secretKeyTemp = secretKeyFactory.generateSecret(keySpec);
+            SecretKeySpec secretKey = new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec);
+            encryptText.setText(Base64.getEncoder().encodeToString(cipher.doFinal(data.getBytes("UTF-8"))));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void Desencriptar(String data){
+        data = data.replace("\n","");
+        byte[] iv = new byte[16];
+        try {
+            IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+            SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec keySpec = new PBEKeySpec(KeyAES.toCharArray(), Key2AES.getBytes(), 65536, 256);
+            SecretKey secretKeyTemp = secretKeyFactory.generateSecret(keySpec);
+            SecretKeySpec secretKey = new SecretKeySpec(secretKeyTemp.getEncoded(), "AES");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec);
+            encryptText.setText( new String(cipher.doFinal(Base64.getDecoder().decode(data))));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
 
     public static void main(String[] args){
         JFrame frame = new AES_Encrypt("AES Encrypt SW");
